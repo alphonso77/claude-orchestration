@@ -11,13 +11,12 @@ Complex features often need parallel work streams — backend, frontend, tests. 
 Claude Orchestration gives you a set of reusable slash commands and a coordination pattern that lets you:
 
 - **Plan** with `/alpha` — design the effort, define API contracts, assign sessions
-- **Build** with `/beta`, `/gamma`, etc. — each session reads its task from a shared orchestration file
+- **Build** with `/beta`, `/gamma`, etc. — each session reads its task from a shared coordination file
 - **Review & polish** — Alpha reviews each session's output, writes polish items, session runs `/polish`
 - **Verify** with `/delta` — dedicated test gate session
 
-Sessions coordinate through two files:
-1. **`orchestration/session-orchestration.md`** — the effort plan (prompts, contracts, status)
-2. **`coordination.md` in Claude memory** — shared state that all sessions read and write
+Sessions coordinate through a single file:
+- **`coordination.md` in Claude memory** — the effort plan, session prompts, API contracts, progress tracking
 
 ## Quick Start
 
@@ -37,7 +36,6 @@ git clone https://github.com/alphonso77/claude-orchestration.git /tmp/claude-orc
 
 # Copy into your project
 cp -r /tmp/claude-orchestration/.claude/commands/ .claude/commands/
-cp -r /tmp/claude-orchestration/orchestration/ orchestration/
 
 # Clean up
 rm -rf /tmp/claude-orchestration
@@ -48,8 +46,8 @@ rm -rf /tmp/claude-orchestration
 1. Open a terminal in VS Code and start Claude Code
 2. Type `/alpha`
 3. Describe what you're building
-4. Alpha designs the session plan and tells you which sessions to launch
-5. Open new terminals, rename them (right-click → Rename), and run `/beta`, `/gamma`, etc.
+4. Alpha designs the session plan and writes prompts into the coordination file
+5. Open new terminals, rename them (right-click > Rename), and run `/beta`, `/gamma`, etc.
 6. When sessions finish, come back to Alpha for code review
 7. Run `/polish` in each session to address review feedback
 8. Run `/delta` to verify everything
@@ -58,54 +56,57 @@ rm -rf /tmp/claude-orchestration
 
 | Command | Role | Description |
 |---------|------|-------------|
-| `/alpha` | Brain | Plans the effort, writes orchestration file, does code reviews |
-| `/beta` | Session B | Reads its task from the orchestration file |
-| `/gamma` | Session C | Reads its task from the orchestration file |
+| `/alpha` | Brain | Plans the effort, writes coordination file, does code reviews |
+| `/beta` | Session B | Reads its task from the coordination file |
+| `/gamma` | Session C | Reads its task from the coordination file |
 | `/delta` | Test gate | Runs typecheck, lint, tests, and feature verification |
 | `/polish` | Cleanup | Reads polish items from the session's own coordination section |
 
-Commands are generic — they never need editing. Alpha writes the specific prompts into the orchestration file each effort.
+Commands are generic — they never need editing. Alpha writes the specific prompts into the coordination file each effort.
 
 ## Session Lifecycle
 
 ```
 /alpha (plan)
-    ├── /beta (build) ──→ Alpha reviews ──→ /polish (fix)
-    ├── /gamma (build) ──→ Alpha reviews ──→ /polish (fix)
+    ├── /beta (build) ──> Alpha reviews ──> /polish (fix)
+    ├── /gamma (build) ──> Alpha reviews ──> /polish (fix)
     └── /delta (verify)
 ```
 
-1. **Alpha plans** → writes orchestration file with prompts and API contracts
-2. **Sessions build** → `/beta` and `/gamma` run in parallel, each reading their prompt
-3. **Alpha reviews** → code review, writes polish items into coordination file
-4. **Sessions polish** → `/polish` in each session to address feedback
-5. **Delta verifies** → typecheck, lint, tests, feature smoke test
+1. **Alpha plans** -> writes coordination file with session prompts and API contracts
+2. **Sessions build** -> `/beta` and `/gamma` run in parallel terminals, each reading their prompt
+3. **Alpha reviews** -> code review, writes polish items into coordination file
+4. **Sessions polish** -> `/polish` in each session to address feedback
+5. **Delta verifies** -> typecheck, lint, tests, feature smoke test
 
 ## How It Works
 
-### The Orchestration File
-
-Alpha writes `orchestration/session-orchestration.md` for each effort. It contains:
-
-- **Session table** — who's doing what
-- **Session prompts** — detailed task descriptions for each session
-- **API contracts** — interfaces that sessions must agree on
-- **Polish section** — cleanup items added after code review
-
 ### The Coordination File
 
-A markdown file in Claude's memory (`coordination.md`) that all sessions read and write. It contains:
+Alpha writes `coordination.md` in Claude's memory for each effort. It contains:
 
-- **API contracts** — shared interfaces
+- **Session table** — who's doing what
+- **Session prompts** — detailed task descriptions (under `## Beta Prompt`, `## Gamma Prompt`, etc.)
+- **API contracts** — interfaces that sessions must agree on
 - **Decisions log** — dated decisions made during the effort
 - **Per-session sections** — progress, files changed, polish items
 
-Each session owns its section. Alpha resolves conflicts.
+Each session reads its prompt from this file and updates its own section. Alpha resolves conflicts.
+
+### Why Manual Sessions for Code Writing
+
+Code-writing sessions are always launched manually by the user in separate terminals. Alpha can spawn read-only agents (research, code exploration, analysis), but code-writing agents hit persistent issues:
+
+- **Auth errors** — spawned agents lose their API session
+- **Worktree confusion** — uncommitted changes aren't visible to worktree agents
+- **Fallback to sequential** — Alpha ends up doing the work itself, defeating the purpose
+
+Manual sessions are fully authenticated Claude Code instances that just work.
 
 ### Why This Works
 
 - **No context bleed** — each session has a focused task and limited file ownership
-- **No copy-paste** — slash commands bootstrap themselves from the orchestration file
+- **No copy-paste** — slash commands bootstrap themselves from the coordination file
 - **Built-in review** — Alpha reviews every session's output before it's considered done
 - **Reusable** — the same commands work for any effort, any project
 

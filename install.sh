@@ -9,7 +9,7 @@ REPO="https://raw.githubusercontent.com/alphonso77/claude-orchestration/main"
 echo "Installing Claude Orchestration..."
 
 # Create directories
-mkdir -p .claude/commands orchestration
+mkdir -p .claude/commands
 
 # Download slash commands
 for cmd in alpha beta gamma delta polish; do
@@ -17,12 +17,11 @@ for cmd in alpha beta gamma delta polish; do
   echo "  ✓ .claude/commands/$cmd.md"
 done
 
-# Download orchestration files
-curl -fsSL "$REPO/orchestration/README.md" -o "orchestration/README.md"
-echo "  ✓ orchestration/README.md"
-
-curl -fsSL "$REPO/orchestration/session-orchestration.md" -o "orchestration/session-orchestration.md"
-echo "  ✓ orchestration/session-orchestration.md"
+# Clean up deprecated orchestration directory (from v1)
+if [ -d "orchestration" ]; then
+  rm -rf orchestration
+  echo "  ✓ removed deprecated orchestration/ directory"
+fi
 
 echo ""
 echo "Done! Start Claude Code and type /alpha to begin."
