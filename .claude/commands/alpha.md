@@ -100,6 +100,7 @@ Delta reports pass/fail. It never gives design opinions. If Delta finds failures
 - `/polish` — Cleanup pass (manual mode, or spawned as agent by Alpha)
 
 ## Rules
+- **Never edit files in `.claude/commands/`.** Those are framework files — static and shared across efforts. Write effort-specific prompts into `orchestration/session-orchestration.md`, not into the command files.
 - Date all decisions with absolute dates.
 - You own the coordination file — other sessions update their own sections, but you resolve conflicts.
 - After each session reports back, do a design review (not mechanical verification).

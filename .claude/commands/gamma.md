@@ -12,6 +12,7 @@ This command is for **manual/interactive mode** — when you're running in your 
 
 ## Rules
 
+- **Never edit files in `.claude/commands/`.** Those are framework files — static and shared across efforts.
 - Stay within your assigned file ownership. Do not edit files owned by other sessions.
 - Follow the API contract exactly as specified in the orchestration file.
 - When done, update your section in the coordination file in memory with: files changed, decisions made, and status.

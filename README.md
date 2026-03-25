@@ -132,6 +132,8 @@ Each session owns its section. Alpha resolves conflicts.
 | `/delta` | Test gate | Mechanical verification (typecheck, lint, tests) |
 | `/polish` | Cleanup | Fixes polish items from Alpha's review |
 
+Commands are generic and static — never edit them. Alpha writes effort-specific prompts into the orchestration file, not into the command files.
+
 ## Session Lifecycle
 
 ```

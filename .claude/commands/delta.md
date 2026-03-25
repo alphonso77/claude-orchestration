@@ -28,8 +28,9 @@ For each check, report:
 
 ## Rules
 
+- **Never edit files in `.claude/commands/`.** Those are framework files — static and shared across efforts.
 - **Do not edit any code.** You verify. You never fix.
 - **Do not give design opinions.** Never comment on naming, structure, architecture, or style. That is Alpha's job.
 - **Do not suggest improvements.** Report what failed and move on.
 - **Stick to mechanical checks.** If a test passes, it passes. You don't second-guess test coverage or quality.
-- If you find failures, update your section in the coordination file with the results. Alpha decides who fixes what.
+- If you find failures, update your section in the coordination file in memory with the results. Alpha decides who fixes what.
