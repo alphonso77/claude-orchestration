@@ -1,5 +1,9 @@
 Alpha has reviewed your work and added polish items to your section of the coordination file.
 
+## Modes
+
+This command is for **manual mode**. In agent mode, Alpha spawns you as an agent automatically with the polish items in the prompt.
+
 ## Startup
 
 1. Check the coordination file in your memory (`coordination.md`).

@@ -1,6 +1,6 @@
 # Claude Orchestration
 
-A multi-session orchestration framework for [Claude Code](https://claude.ai/code). Coordinate parallel AI coding sessions using slash commands.
+A multi-session orchestration framework for [Claude Code](https://claude.ai/code). Coordinate parallel AI coding sessions using a single command.
 
 ## The Problem
 
@@ -8,16 +8,21 @@ Complex features often need parallel work streams — backend, frontend, tests. 
 
 ## The Solution
 
-Claude Orchestration gives you a set of reusable slash commands and a coordination pattern that lets you:
+Run `/alpha` and describe what you're building. Alpha designs the work plan, spawns background agents in isolated git worktrees, and reviews their output — while you keep chatting with it about architecture, asking questions, or brainstorming. One terminal, one conversation.
 
-- **Plan** with `/alpha` — design the effort, define API contracts, assign sessions
-- **Build** with `/beta`, `/gamma`, etc. — each session reads its task from a shared orchestration file
-- **Review & polish** — Alpha reviews each session's output, writes polish items, session runs `/polish`
-- **Verify** with `/delta` — dedicated test gate session
+```
+You <-> Alpha (interactive, persistent conversation)
+          |-- spawns Beta agent  (background, worktree)
+          |-- spawns Gamma agent (background, worktree)
+          |
+          |   <- you keep chatting with Alpha here ->
+          |
+          |-- Beta completes -> Alpha reviews -> polish if needed
+          |-- Gamma completes -> Alpha reviews -> polish if needed
+          '-- spawns Delta agent (haiku, mechanical verification)
+```
 
-Sessions coordinate through two files:
-1. **`orchestration/session-orchestration.md`** — the effort plan (prompts, contracts, status)
-2. **`coordination.md` in Claude memory** — shared state that all sessions read and write
+When you need to interactively pair with a session — talk through a problem, guide decisions — you can run `/beta`, `/gamma`, etc. in a separate terminal instead.
 
 ## Quick Start
 
@@ -45,54 +50,69 @@ rm -rf /tmp/claude-orchestration
 
 ### Use
 
-1. Open a terminal in VS Code and start Claude Code
+1. Open a terminal and start Claude Code
 2. Type `/alpha`
 3. Describe what you're building
-4. Alpha designs the session plan and tells you which sessions to launch
-5. Open new terminals, rename them (right-click → Rename), and run `/beta`, `/gamma`, etc.
-6. When sessions finish, come back to Alpha for code review
-7. Run `/polish` in each session to address review feedback
-8. Run `/delta` to verify everything
+4. Alpha designs the session plan, writes the orchestration file, and spawns agents
+5. Keep chatting with Alpha while agents work in the background
+6. Alpha reviews each agent's output when it completes
+7. Alpha dispatches Delta to run mechanical verification
 
-## Slash Commands
+That's it. One terminal, one conversation.
 
-| Command | Role | Description |
-|---------|------|-------------|
-| `/alpha` | Brain | Plans the effort, writes orchestration file, does code reviews |
-| `/beta` | Session B | Reads its task from the orchestration file |
-| `/gamma` | Session C | Reads its task from the orchestration file |
-| `/delta` | Test gate | Runs typecheck, lint, tests, and feature verification |
-| `/polish` | Cleanup | Reads polish items from the session's own coordination section |
+### Interactive pairing (optional)
 
-Commands are generic — they never need editing. Alpha writes the specific prompts into the orchestration file each effort.
+If you need to work through something with a session directly:
 
-## Session Lifecycle
+1. Open a new terminal
+2. Run `/beta`, `/gamma`, or `/delta`
+3. The session reads its task from the orchestration file and you can pair with it
 
-```
-/alpha (plan)
-    ├── /beta (build) ──→ Alpha reviews ──→ /polish (fix)
-    ├── /gamma (build) ──→ Alpha reviews ──→ /polish (fix)
-    └── /delta (verify)
+## Upgrading
+
+Re-run the install script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/alphonso77/claude-orchestration/main/install.sh | bash
 ```
 
-1. **Alpha plans** → writes orchestration file with prompts and API contracts
-2. **Sessions build** → `/beta` and `/gamma` run in parallel, each reading their prompt
-3. **Alpha reviews** → code review, writes polish items into coordination file
-4. **Sessions polish** → `/polish` in each session to address feedback
-5. **Delta verifies** → typecheck, lint, tests, feature smoke test
+The script detects an existing installation and upgrades the command files. Your `orchestration/session-orchestration.md` is preserved if you have an active effort — it won't be overwritten.
+
+Safe to run mid-effort. The updated commands are backwards-compatible with existing orchestration and coordination files.
 
 ## How It Works
 
-### The Orchestration File
+### Two gates, two jobs
+
+The framework has two review gates with distinct responsibilities:
+
+| | Alpha (design review) | Delta (mechanical verification) |
+|---|---|---|
+| **Checks** | Contract adherence, architectural fit, naming, structure, cross-session consistency | Typecheck, lint, tests, build |
+| **Output** | Polish items for sessions to fix | Pass/fail report |
+| **Edits code?** | No | No |
+| **Model** | Opus/Sonnet (needs judgment) | Haiku (runs commands, reports output) |
+| **When** | After each session completes | After all polish is done |
+
+Alpha never runs tests. Delta never gives design opinions. Clean separation.
+
+### Agent mode vs manual mode
+
+**Agent mode (primary):** Alpha spawns sessions as background agents in isolated git worktrees. You stay in one terminal, one conversation. Agents run in parallel without file conflicts.
+
+**Manual mode (fallback):** You open separate terminals and run `/beta`, `/gamma`, etc. Use this when you want to interactively pair with a session — talk through problems, guide decisions in real-time.
+
+You can mix modes in the same effort. Start Beta as an agent, but if it hits a blocker, pick it up manually in a new terminal.
+
+### The orchestration file
 
 Alpha writes `orchestration/session-orchestration.md` for each effort. It contains:
 
 - **Session table** — who's doing what
 - **Session prompts** — detailed task descriptions for each session
 - **API contracts** — interfaces that sessions must agree on
-- **Polish section** — cleanup items added after code review
 
-### The Coordination File
+### The coordination file
 
 A markdown file in Claude's memory (`coordination.md`) that all sessions read and write. It contains:
 
@@ -102,20 +122,37 @@ A markdown file in Claude's memory (`coordination.md`) that all sessions read an
 
 Each session owns its section. Alpha resolves conflicts.
 
-### Why This Works
+## Slash Commands
 
-- **No context bleed** — each session has a focused task and limited file ownership
-- **No copy-paste** — slash commands bootstrap themselves from the orchestration file
-- **Built-in review** — Alpha reviews every session's output before it's considered done
-- **Reusable** — the same commands work for any effort, any project
+| Command | Role | Description |
+|---------|------|-------------|
+| `/alpha` | Brain | Plans the effort, spawns agents, does design reviews |
+| `/beta` | Session B | Manual/interactive mode for pairing |
+| `/gamma` | Session C | Manual/interactive mode for pairing |
+| `/delta` | Test gate | Mechanical verification (typecheck, lint, tests) |
+| `/polish` | Cleanup | Fixes polish items from Alpha's review |
+
+## Session Lifecycle
+
+```
+/alpha (plan + dispatch)
+    |-- Beta agent (background, worktree)
+    |-- Gamma agent (background, worktree)
+    |
+    |   Alpha reviews each on completion
+    |   Alpha dispatches polish agents if needed
+    |
+    '-- Delta agent (haiku, mechanical verification)
+```
 
 ## Tips
 
-- **Rename your VS Code terminals** to match session names (Alpha, Beta, etc.)
 - **Don't over-session** — if a task takes 20 minutes, just do it in Alpha
 - **Date your decisions** — use absolute dates in the coordination file
 - **Good splits**: by layer (backend/frontend), by concern (code/tests), by independence (different files)
 - **Bad splits**: two sessions editing the same files, tightly coupled work
+- **Use haiku for Delta** — it's running commands and reporting output, not making judgment calls
+- **Switch to manual mode** when you need to pair — agent mode is for autonomous work
 
 ## License
 
