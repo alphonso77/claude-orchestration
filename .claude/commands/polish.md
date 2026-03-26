@@ -1,5 +1,9 @@
 Alpha has reviewed your work and added polish items to your section of the coordination file.
 
+## Modes
+
+This command is for **manual mode**. In agent mode, Alpha spawns you as an agent automatically with the polish items in the prompt.
+
 ## Startup
 
 1. Check the coordination file in your memory (`coordination.md`).
@@ -8,6 +12,7 @@ Alpha has reviewed your work and added polish items to your section of the coord
 
 ## Rules
 
+- **Never edit files in `.claude/commands/`.** Those are framework files — static and shared across efforts.
 - Keep changes minimal. Fix what's listed, don't refactor anything else.
 - Don't add features, comments, or tests unless explicitly asked.
 - When done, mark the polish items as complete in the coordination file.
