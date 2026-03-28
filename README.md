@@ -38,6 +38,12 @@ Skills are installed to `~/.claude/skills/` — available globally in all projec
 
 Re-run the same install command. It detects the existing installation and overwrites the skill files.
 
+### Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/alphonso77/claude-orchestration/main/uninstall.sh | bash
+```
+
 ### Alternative: Plugin install
 
 If you prefer managed installs through Claude Code's plugin system:
@@ -47,7 +53,25 @@ If you prefer managed installs through Claude Code's plugin system:
 /plugin install orch@claude-orchestration
 ```
 
-This gives you namespaced commands (`/orch:alpha`, `/orch:beta`, etc.).
+This gives you namespaced commands (`/orch:alpha`, `/orch:beta`, etc.). To get short commands instead, copy the skills after installing:
+
+**macOS / Linux:**
+
+```bash
+for skill in alpha beta gamma delta polish; do mkdir -p ~/.claude/skills/$skill && cp ~/.claude/plugins/orch/skills/$skill/SKILL.md ~/.claude/skills/$skill/SKILL.md; done
+```
+
+**Windows (PowerShell):**
+
+```powershell
+foreach ($skill in @('alpha','beta','gamma','delta','polish')) { New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills\$skill" | Out-Null; Copy-Item "$env:USERPROFILE\.claude\plugins\orch\skills\$skill\SKILL.md" "$env:USERPROFILE\.claude\skills\$skill\SKILL.md" }
+```
+
+**Note:** Uninstalling the plugin does not remove copied skills. To fully uninstall, also remove them:
+
+```bash
+rm -rf ~/.claude/skills/{alpha,beta,gamma,delta,polish}
+```
 
 ### Use
 
