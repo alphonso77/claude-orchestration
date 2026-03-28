@@ -136,6 +136,10 @@ Manual sessions keep the human in the loop for each work stream. This turns out 
 - **Good splits**: by layer (backend/frontend), by concern (code/tests), by independence (different files)
 - **Bad splits**: two sessions editing the same files, tightly coupled work
 
+## Privacy
+
+This plugin runs entirely within your local Claude Code environment. It does not collect, transmit, or store any user data. No analytics, no telemetry, no external network calls. The coordination file is stored in Claude's local project-scoped memory on your machine.
+
 ## License
 
 MIT
