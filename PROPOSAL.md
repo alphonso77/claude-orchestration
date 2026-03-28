@@ -2,13 +2,13 @@
 
 **Date:** 2026-03-24
 **Updated:** 2026-03-28
-**Status:** Plugin structure implemented
+**Status:** Hybrid distribution (curl + plugin)
 
 ---
 
 ## Current State
 
-Claude Orchestration is packaged as a **Claude Code plugin** — a set of skills with a `.claude-plugin/plugin.json` manifest. Skills are auto-discovered from the `skills/` directory. When installed, they're available as namespaced commands (`/claude-orchestration:alpha`, etc.).
+Claude Orchestration ships as both a **`curl | bash` install** (primary) and a **Claude Code plugin** (alternative). The primary path copies skills to `~/.claude/skills/` for short commands (`/alpha`, `/beta`, etc.). The plugin path provides namespaced commands (`/orch:alpha`, `/orch:beta`, etc.) via the standard plugin system.
 
 The coordination file lives in Claude's project-scoped memory, so per-project state is isolated without any per-repo files.
 
@@ -16,7 +16,8 @@ The coordination file lives in Claude's project-scoped memory, so per-project st
 
 1. **v1** — Per-project `.claude/commands/` files, copied via `install.sh`
 2. **v2** — Global install to `~/.claude/skills/`, still via `install.sh`
-3. **v3 (current)** — Claude Code plugin with standard manifest and skill auto-discovery
+3. **v3** — Claude Code plugin with standard manifest and skill auto-discovery
+4. **v4 (current)** — Hybrid: `curl | bash` as primary (short commands), plugin as alternative (managed installs)
 
 ### Agent approach (abandoned)
 
