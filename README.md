@@ -20,26 +20,34 @@ Sessions coordinate through a single file:
 
 ## Quick Start
 
-### Install
-
-Copy the files into your project:
+**macOS / Linux:**
 
 ```bash
-# From your project root
 curl -fsSL https://raw.githubusercontent.com/alphonso77/claude-orchestration/main/install.sh | bash
 ```
 
-Or manually copy:
-```bash
-# Clone this repo
-git clone https://github.com/alphonso77/claude-orchestration.git /tmp/claude-orchestration
+**Windows (PowerShell):**
 
-# Copy into your project
-cp -r /tmp/claude-orchestration/.claude/commands/ .claude/commands/
-
-# Clean up
-rm -rf /tmp/claude-orchestration
+```powershell
+foreach ($skill in @('alpha','beta','gamma','delta','polish')) { New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills\$skill" | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/alphonso77/claude-orchestration/main/skills/$skill/SKILL.md" -OutFile "$env:USERPROFILE\.claude\skills\$skill\SKILL.md" }
 ```
+
+Skills are installed to `~/.claude/skills/` — available globally in all projects, nothing to commit per-repo. The install script cleans up any older installations automatically.
+
+### Upgrade
+
+Re-run the same install command. It detects the existing installation and overwrites the skill files.
+
+### Alternative: Plugin install
+
+If you prefer managed installs through Claude Code's plugin system:
+
+```bash
+/plugin marketplace add alphonso77/claude-orchestration
+/plugin install orch@claude-orchestration
+```
+
+This gives you namespaced commands (`/orch:alpha`, `/orch:beta`, etc.).
 
 ### Use
 
@@ -51,28 +59,19 @@ rm -rf /tmp/claude-orchestration
 6. When sessions finish, come back to Alpha for code review
 7. Run `/polish` in each session to address review feedback
 8. Run `/delta` to verify everything
+9. Tell Alpha "let's wrap this up" — updates `CLAUDE.md` and resets the coordination file
 
-### Upgrading
+## Skills
 
-Re-run the install script:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/alphonso77/claude-orchestration/main/install.sh | bash
-```
-
-The script detects an existing installation and upgrades the command files. Safe to run mid-effort.
-
-## Slash Commands
-
-| Command | Role | Description |
-|---------|------|-------------|
+| Skill | Role | Description |
+|-------|------|-------------|
 | `/alpha` | Brain | Plans the effort, writes coordination file, does design reviews |
 | `/beta` | Session B | Reads its task from the coordination file |
 | `/gamma` | Session C | Reads its task from the coordination file |
 | `/delta` | Test gate | Mechanical verification (typecheck, lint, tests) |
 | `/polish` | Cleanup | Reads polish items from the session's own coordination section |
 
-Commands are generic and static — never edit them. Alpha writes effort-specific prompts into the coordination file, not into the command files.
+Skills are generic and static — never edit them. Alpha writes effort-specific prompts into the coordination file, not into the skill files.
 
 ## Session Lifecycle
 
@@ -80,7 +79,8 @@ Commands are generic and static — never edit them. Alpha writes effort-specifi
 /alpha (plan)
     ├── /beta (build) ──> Alpha reviews ──> /polish (fix)
     ├── /gamma (build) ──> Alpha reviews ──> /polish (fix)
-    └── /delta (verify)
+    ├── /delta (verify)
+    └── "let's wrap this up" ──> CLAUDE.md update ──> coordination reset
 ```
 
 1. **Alpha plans** -> writes coordination file with session prompts and API contracts
@@ -88,6 +88,7 @@ Commands are generic and static — never edit them. Alpha writes effort-specifi
 3. **Alpha reviews** -> design review, writes polish items into coordination file
 4. **Sessions polish** -> `/polish` in each session to address feedback
 5. **Delta verifies** -> typecheck, lint, tests, feature smoke test
+6. **Wrap up** -> tell Alpha "let's wrap this up" — Alpha updates `CLAUDE.md` with what the effort changed, then resets the coordination file for the next effort
 
 ## How It Works
 
@@ -116,15 +117,16 @@ Alpha writes `coordination.md` in Claude's memory for each effort. It contains:
 
 Each session reads its prompt from this file and updates its own section. Alpha resolves conflicts.
 
-### Why Manual Sessions for Code Writing
+The coordination file is project-scoped — Claude's memory is keyed by project path, so efforts in different repos never interfere with each other.
 
-Code-writing sessions are always launched manually by the user in separate terminals. All sessions can spawn read-only agents (research, code exploration, analysis), but code-writing agents hit persistent issues:
+### Why Manual Sessions (Not Agents)
 
-- **Auth errors** — spawned agents lose their API session
-- **Worktree confusion** — uncommitted changes aren't visible to worktree agents
-- **Fallback to sequential** — Alpha ends up doing the work itself, defeating the purpose
+Sessions are human-launched Claude Code instances in separate terminals, not spawned sub-agents. We tried the agent approach and moved away from it for two reasons:
 
-Manual sessions are fully authenticated Claude Code instances that just work.
+- **Interruptions** — sub-agents running as Beta/Gamma would interrupt Alpha mid-conversation with permission prompts and status updates, breaking the user's focus
+- **Permission blockers** — agents frequently needed approvals that caused cascading context switches, stalling the effort instead of parallelizing it
+
+Manual sessions keep the human in the loop for each work stream. This turns out to be a feature: you stay close to the effort and maintain visibility into the build, even when vibe coding. Each session is a fully authenticated Claude Code instance that just works — no auth errors, no worktree confusion, no fallback to sequential execution.
 
 ## Tips
 

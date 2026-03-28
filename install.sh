@@ -5,9 +5,11 @@ set -e
 # Usage: curl -fsSL https://raw.githubusercontent.com/alphonso77/claude-orchestration/main/install.sh | bash
 
 REPO="https://raw.githubusercontent.com/alphonso77/claude-orchestration/main"
+TARGET="$HOME/.claude/skills"
+SKILLS="alpha beta gamma delta polish"
 
 # Detect install vs upgrade
-if [ -f ".claude/commands/alpha.md" ]; then
+if [ -f "$TARGET/alpha/SKILL.md" ]; then
   echo "Upgrading Claude Orchestration..."
   UPGRADE=true
 else
@@ -15,24 +17,38 @@ else
   UPGRADE=false
 fi
 
-# Create directories
-mkdir -p .claude/commands
-
-# Download slash commands (always overwritten — these are the framework, not user config)
-for cmd in alpha beta gamma delta polish; do
-  curl -fsSL "$REPO/.claude/commands/$cmd.md" -o ".claude/commands/$cmd.md"
-  echo "  + .claude/commands/$cmd.md"
+# Download skills
+for skill in $SKILLS; do
+  mkdir -p "$TARGET/$skill"
+  curl -fsSL "$REPO/skills/$skill/SKILL.md" -o "$TARGET/$skill/SKILL.md"
+  echo "  + $TARGET/$skill/SKILL.md"
 done
 
-# Clean up deprecated orchestration directory (from v1)
+# Clean up deprecated locations
+if [ -d ".claude/commands" ]; then
+  for cmd in $SKILLS; do
+    rm -f ".claude/commands/$cmd.md"
+  done
+  rmdir ".claude/commands" 2>/dev/null || true
+  echo "  ~ removed deprecated .claude/commands/ files"
+fi
+
+if [ -f "$HOME/.claude/commands/alpha.md" ]; then
+  for cmd in $SKILLS; do
+    rm -f "$HOME/.claude/commands/$cmd.md"
+  done
+  echo "  ~ removed deprecated ~/.claude/commands/ files"
+fi
+
 if [ -d "orchestration" ]; then
   rm -rf orchestration
-  echo "  ✓ removed deprecated orchestration/ directory"
+  echo "  ~ removed deprecated orchestration/ directory"
 fi
 
 echo ""
 if [ "$UPGRADE" = true ]; then
-  echo "Upgraded! Commands updated."
+  echo "Upgraded! Skills updated in $TARGET."
 else
-  echo "Installed! Start Claude Code and type /alpha to begin."
+  echo "Installed! Skills available globally."
+  echo "Start Claude Code in any project and type /alpha to begin."
 fi

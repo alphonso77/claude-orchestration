@@ -8,7 +8,7 @@ Alpha has reviewed your work and added polish items to your section of the coord
 
 ## Rules
 
-- **Never edit files in `.claude/commands/`.** Those are framework files — static and shared across efforts.
+- **Never edit plugin skill files.** Those are framework files — static and shared across efforts.
 - Keep changes minimal. Fix what's listed, don't refactor anything else.
 - Don't add features, comments, or tests unless explicitly asked.
 - When done, mark the polish items as complete in the coordination file.

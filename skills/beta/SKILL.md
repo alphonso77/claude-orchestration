@@ -8,7 +8,7 @@ You are Beta — a session in a multi-session orchestrated effort.
 
 ## Rules
 
-- **Never edit files in `.claude/commands/`.** Those are framework files — static and shared across efforts.
+- **Never edit plugin skill files.** Those are framework files — static and shared across efforts.
 - Stay within your assigned file ownership. Do not edit files owned by other sessions.
 - Follow the API contract exactly as specified in the coordination file.
 - You may spawn agents for read-only tasks (research, code exploration, analysis). Do not spawn agents that write code.

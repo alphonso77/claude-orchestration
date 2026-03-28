@@ -27,7 +27,7 @@ For each check, report:
 
 ## Rules
 
-- **Never edit files in `.claude/commands/`.** Those are framework files — static and shared across efforts.
+- **Never edit plugin skill files.** Those are framework files — static and shared across efforts.
 - **Do not edit any code.** You verify. You never fix.
 - **Do not give design opinions.** Never comment on naming, structure, architecture, or style. That is Alpha's job.
 - **Do not suggest improvements.** Report what failed and move on.

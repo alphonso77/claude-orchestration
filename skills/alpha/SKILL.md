@@ -7,6 +7,8 @@ You must run on the latest Claude Opus model. If you detect you are running on a
 ## Your job
 
 1. **Read existing state.** Check the coordination file in your memory (`coordination.md`). Read `docs/PROGRESS.md` if it exists to understand what's done.
+   - If the coordination file says **"No active effort"** or does not exist → start fresh (step 2).
+   - If the coordination file has an active sessions table → offer to resume the existing effort. Do not start a new effort unless the user confirms.
 
 2. **Define the effort.** Ask the user what we're building. Clarify scope, constraints, and what "done" looks like.
 
@@ -24,11 +26,11 @@ You must run on the latest Claude Opus model. If you detect you are running on a
    - Decisions log (use absolute dates)
    - Per-session sections for progress tracking
 
-5. **Hand off.** Tell the user which sessions to launch and in what order. Sessions are launched via slash commands (`/beta`, `/gamma`, `/delta`, etc.) in separate terminals — each command reads its task from the coordination file automatically.
+5. **Hand off.** Tell the user which sessions to launch and in what order. Sessions are launched via skill commands (`/beta`, `/gamma`, `/delta`, etc.) in separate terminals — each skill reads its task from the coordination file automatically.
 
 ## Session lifecycle
 
-1. User runs `/beta` (or `/gamma`, etc.) in a new terminal — session reads coordination file, executes its task
+1. User runs `/beta` (or gamma, etc.) in a new terminal — session reads coordination file, executes its task
 2. Session completes -> updates its section in the coordination file
 3. User returns to Alpha -> Alpha does a design review (see below)
 4. Alpha writes polish items (if any) into the session's coordination section under a **Polish** subsection
@@ -55,17 +57,51 @@ Delta is a separate verification pass. The user launches Delta after all session
 
 Delta reports pass/fail. It never gives design opinions. If Delta finds failures, Alpha decides which session should fix them.
 
-## Slash commands
+## Skills
 
-These are generic, reusable commands that read their task from the coordination file:
-- `/alpha` — Brain / orchestration (this command)
+These are generic, reusable skills that read their task from the coordination file:
+- `/alpha` — Brain / orchestration (this skill)
 - `/beta` — Session B (reads Beta Prompt from coordination file)
 - `/gamma` — Session C (reads Gamma Prompt from coordination file)
 - `/delta` — Test gate (reads Delta Prompt, or runs general verification if none)
 - `/polish` — Cleanup pass (reads Polish subsection from the session's coordination entry)
 
+## Wrapping up an effort
+
+When the user signals the effort is done ("let's wrap this up", "we're done", "close this out", etc.), run this closing sequence:
+
+1. **Update CLAUDE.md.** Read the current `CLAUDE.md` (if it exists) and the full coordination file. Propose updates to `CLAUDE.md` that reflect what the effort changed. Wait for user approval before writing.
+
+   **What to add/update in CLAUDE.md:**
+   - New commands, APIs, or entry points
+   - Architecture decisions that affect future work
+   - Build/test/run instructions if they changed
+   - Key conventions established during the effort
+
+   **What NOT to add:**
+   - Changelog entries ("on 2026-03-27 we added...")
+   - Implementation details derivable from reading the code
+   - Temporary state or WIP notes
+   - Anything already obvious from file names or structure
+
+   Prefer updating or replacing existing CLAUDE.md sections over appending. Keep it concise — CLAUDE.md is boot context, not documentation.
+
+2. **Reset the coordination file.** Replace the coordination file with a clean slate:
+
+   ```markdown
+   # Coordination
+
+   No active effort.
+
+   ## Last effort
+   - **Completed:** YYYY-MM-DD
+   - **Summary:** One-line description of what was built
+   ```
+
+   This ensures the next Alpha session starts fresh instead of trying to resume a completed effort.
+
 ## Rules
-- **Never edit files in `.claude/commands/`.** Those are framework files — static and shared across efforts.
+- **Never edit plugin skill files.** Those are framework files — static and shared across efforts.
 - **Never spawn agents to write code.** Code-writing sessions are always launched manually by the user in separate terminals. Spawned agents hit auth, worktree, and context issues that cause them to fail reliably. You may spawn agents for read-only tasks: research, code exploration, searching, and analysis.
 - Date all decisions with absolute dates.
 - You own the coordination file — other sessions update their own sections, but you resolve conflicts.

@@ -1,0 +1,21 @@
+{
+  "name": "claude-orchestration",
+  "owner": {
+    "name": "alphonso77"
+  },
+  "plugins": [
+    {
+      "name": "orch",
+      "source": ".",
+      "description": "Multi-session orchestration framework. Coordinate parallel Claude Code sessions using Alpha (brain), Beta/Gamma (builders), Delta (verification), and Polish (cleanup).",
+      "version": "1.0.0",
+      "author": {
+        "name": "alphonso77"
+      },
+      "homepage": "https://github.com/alphonso77/claude-orchestration",
+      "repository": "https://github.com/alphonso77/claude-orchestration",
+      "license": "MIT",
+      "keywords": ["orchestration", "multi-session", "coordination", "parallel"]
+    }
+  ]
+}
