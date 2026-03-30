@@ -154,6 +154,7 @@ Manual sessions keep the human in the loop for each work stream. This turns out 
 
 ## Tips
 
+- **Turn on auto-accept (`Shift+Tab`) before stepping away from a session** — Beta, Gamma, and Delta will stall waiting for edit permissions if it's off
 - **Rename your VS Code terminals** to match session names (Alpha, Beta, etc.)
 - **Don't over-session** — if a task takes 20 minutes, just do it in Alpha
 - **Date your decisions** — use absolute dates in the coordination file

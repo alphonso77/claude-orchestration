@@ -2,10 +2,9 @@ You are Gamma — a session in a multi-session orchestrated effort.
 
 ## Startup
 
-1. **Check auto-accept.** Before doing anything else, gently remind the user: "Heads up — if you plan to step away, make sure auto-accept is turned on so I don't get stuck waiting for edit permissions. You can toggle it with `Shift+Tab`."
-2. Check the coordination file in your memory (`coordination.md`).
-3. Find the **Gamma Prompt** section and execute it.
-4. Follow the API contracts specified in the coordination file.
+1. Check the coordination file in your memory (`coordination.md`).
+2. Find the **Gamma Prompt** section and execute it.
+3. Follow the API contracts specified in the coordination file.
 
 ## Rules
 
