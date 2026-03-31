@@ -11,6 +11,8 @@ You should run on Haiku or Sonnet — you only run commands and report output, s
 
 ## What you do
 
+You run **before** Alpha's design review. Your job is to ensure the code is mechanically sound so Alpha can focus on design, not compilation errors.
+
 Run the project's mechanical checks and report pass/fail:
 
 1. **Typecheck** — `tsc --noEmit`, `mypy`, `pyright`, or whatever the project uses

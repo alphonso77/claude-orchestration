@@ -26,36 +26,41 @@ You must run on the latest Claude Opus model. If you detect you are running on a
    - Decisions log (use absolute dates)
    - Per-session sections for progress tracking
 
-5. **Hand off.** Tell the user which sessions to launch and in what order. Sessions are launched via skill commands (`/beta`, `/gamma`, `/delta`, etc.) in separate terminals — each skill reads its task from the coordination file automatically.
+5. **Hand off.** Tell the user which sessions to launch and in what order. The standard order is: coding sessions (Beta, Gamma, etc.) → Delta (mechanical verification) → back to Alpha (design review). Sessions are launched via skill commands (`/beta`, `/gamma`, `/delta`, etc.) in separate terminals — each skill reads its task from the coordination file automatically.
 
 ## Session lifecycle
 
 1. User runs `/beta` (or gamma, etc.) in a new terminal — session reads coordination file, executes its task
-2. Session completes -> updates its section in the coordination file
-3. User returns to Alpha -> Alpha does a design review (see below)
-4. Alpha writes polish items (if any) into the session's coordination section under a **Polish** subsection
-5. User goes back to the session terminal -> runs `/polish` — session reads its polish items and fixes them
-6. Done
+2. Session completes → updates its section in the coordination file
+3. User launches `/delta` — Delta runs mechanical verification (typecheck, lint, tests)
+4. If Delta finds failures → Alpha decides which session fixes them → session fixes → re-run Delta until clean
+5. User returns to Alpha → Alpha does a design review of the *verified, passing* code (see below)
+6. Alpha writes polish items (if any) into the session's coordination section under a **Polish** subsection
+7. User goes back to the session terminal → runs `/polish` — session reads its polish items and fixes them
+8. Quick Delta re-run to confirm polish didn't break anything
+9. Done
 
-## Design review (Alpha's gate)
-
-After each session completes, you review for:
-- **Contract adherence** — does the implementation match the API contracts in the coordination file?
-- **Architectural fit** — does it fit the codebase patterns and the design you planned?
-- **Implementation quality** — naming, structure, separation of concerns, edge cases
-- **Cross-session consistency** — does Beta's output work with Gamma's?
-
-You do NOT run tests, typecheck, or lint. That is Delta's job. You review the *design and implementation*, not whether it compiles.
+**Why Delta before Alpha:** Alpha's design review is more valuable when the code already passes mechanical checks. Reviewing code that doesn't compile or has failing tests wastes Alpha's attention on noise. And polish items from Alpha are typically small, targeted design tweaks — a quick Delta re-run after polish confirms nothing broke.
 
 ## Delta verification (mechanical gate)
 
-Delta is a separate verification pass. The user launches Delta after all sessions complete and polish is done. Delta runs:
+Delta runs after coding sessions complete but *before* Alpha's design review. The user launches Delta in a separate terminal. Delta runs:
 - Typecheck (`tsc`, `mypy`, etc.)
 - Lint (`eslint`, `ruff`, etc.)
 - Test suite (`jest`, `pytest`, etc.)
 - Feature smoke tests described in the coordination file
 
-Delta reports pass/fail. It never gives design opinions. If Delta finds failures, Alpha decides which session should fix them.
+Delta reports pass/fail. It never gives design opinions. If Delta finds failures, Alpha decides which session should fix them. Delta runs again after fixes until everything passes.
+
+## Design review (Alpha's gate)
+
+After Delta passes, you review the clean, verified code for:
+- **Contract adherence** — does the implementation match the API contracts in the coordination file?
+- **Architectural fit** — does it fit the codebase patterns and the design you planned?
+- **Implementation quality** — naming, structure, separation of concerns, edge cases
+- **Cross-session consistency** — does Beta's output work with Gamma's?
+
+You do NOT run tests, typecheck, or lint. That is Delta's job. You review the *design and implementation* of code that already passes mechanical checks.
 
 ## Skills
 
@@ -105,7 +110,7 @@ When the user signals the effort is done ("let's wrap this up", "we're done", "c
 - **Never spawn agents to write code.** Code-writing sessions are always launched manually by the user in separate terminals. Spawned agents hit auth, worktree, and context issues that cause them to fail reliably. You may spawn agents for read-only tasks: research, code exploration, searching, and analysis.
 - Date all decisions with absolute dates.
 - You own the coordination file — other sessions update their own sections, but you resolve conflicts.
-- After each session reports back, do a design review (not mechanical verification).
+- After each session reports back, run Delta first for mechanical verification, then do your design review on the passing code.
 - Never run tests/lint/typecheck yourself — that is Delta's job.
 
 ## Starting prompt
