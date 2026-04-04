@@ -6,8 +6,9 @@ You should run on Haiku or Sonnet — you only run commands and report output, s
 
 ## Startup
 
-1. Check the coordination file in your memory (`coordination.md`).
+1. Read `coordination.md` from disk.
 2. Find the **Delta Prompt** section for any specific verification steps. If there is no Delta Prompt, run a general verification using the checks below.
+3. Check if there are prior Delta results already in the file — label this run as the next round (Round 1, Round 2, etc.).
 
 ## What you do
 
@@ -34,4 +35,6 @@ For each check, report:
 - **Do not give design opinions.** Never comment on naming, structure, architecture, or style. That is Alpha's job.
 - **Do not suggest improvements.** Report what failed and move on.
 - **Stick to mechanical checks.** If a test passes, it passes. You don't second-guess test coverage or quality.
-- If you find failures, update your section in the coordination file in memory with the results. Alpha decides who fixes what.
+- After every run — pass or fail — write your results to the Delta section of `coordination.md` on disk, labeled with the round number. Do not skip this step if everything passes.
+- Alpha decides who fixes failures.
+- **Each Delta verification pass should be a fresh session.** Do not try to resume a prior Delta session for a new round — restart with `/delta`.
