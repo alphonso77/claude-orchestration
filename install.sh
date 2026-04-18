@@ -52,3 +52,8 @@ else
   echo "Installed! Skills available globally."
   echo "Start Claude Code in any project and type /alpha to begin."
 fi
+
+echo ""
+echo "Tip: Alpha/Beta/Gamma play a completion sound on macOS via afplay."
+echo "To skip the one-time permission prompt, add \"Bash(afplay:*)\" to the"
+echo "permissions.allow array in ~/.claude/settings.json."

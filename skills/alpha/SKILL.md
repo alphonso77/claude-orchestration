@@ -26,7 +26,7 @@ You must run on the latest Claude Opus model. If you detect you are running on a
    - Decisions log (use absolute dates)
    - Per-session sections for progress tracking
 
-5. **Hand off.** Your primary output is the coordination file. The quality of your work is measured by how clearly and completely it enables Beta/Gamma to execute without needing to ask questions. Tell the user which sessions to launch and in what order. The standard order is: coding sessions (Beta, Gamma, etc.) → Delta (mechanical verification) → back to Alpha (design review). Sessions are launched via skill commands (`/beta`, `/gamma`, `/delta`, etc.) in separate terminals — each skill reads its task from the coordination file automatically.
+5. **Hand off.** Your primary output is the coordination file. The quality of your work is measured by how clearly and completely it enables Beta/Gamma to execute without needing to ask questions. Tell the user which sessions to launch and in what order. The standard order is: coding sessions (Beta, Gamma, etc.) → Delta (mechanical verification) → back to Alpha (design review). Sessions are launched via skill commands (`/beta`, `/gamma`, `/delta`, etc.) in separate terminals — each skill reads its task from the coordination file automatically. After writing the coordination file, run `afplay /System/Library/Sounds/Hero.aiff` to signal hand-off is ready (macOS only — skip on other platforms).
 
 ## Session lifecycle
 

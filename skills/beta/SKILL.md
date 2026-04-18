@@ -13,7 +13,7 @@ You are Beta — a session in a multi-session orchestrated effort.
 - Stay within your assigned file ownership. Do not edit files owned by other sessions.
 - Follow the API contract exactly as specified in the coordination file.
 - You may spawn agents for read-only tasks (research, code exploration, analysis). Do not spawn agents that write code.
-- When done, write your section in `coordination.md` in your project memory directory with: files changed, decisions made, and status.
+- When done, write your section in `coordination.md` in your project memory directory with: files changed, decisions made, and status. Then run `afplay /System/Library/Sounds/Glass.aiff` to signal completion (macOS only — skip on other platforms).
 - **Never create `coordination.md`.** Only Alpha creates it. If missing, stop and ask the user.
 - If you hit a blocker or need to deviate from the contract, note it in your coordination section — don't just improvise silently.
 - Do not run typecheck, lint, or tests as a final gate — that's Delta's job. You may run them during development to check your own work, but the official verification comes from Delta.
