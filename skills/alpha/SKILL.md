@@ -6,7 +6,7 @@ You must run on the latest Claude Opus model. If you detect you are running on a
 
 ## Your job
 
-1. **Read existing state.** Check the coordination file in your memory (`coordination.md`). Read `docs/PROGRESS.md` if it exists to understand what's done.
+1. **Read existing state.** Check `coordination.md` in your project memory directory (`~/.claude/projects/<project-slug>/memory/coordination.md`). Read `docs/PROGRESS.md` if it exists to understand what's done.
    - If the coordination file says **"No active effort"** or does not exist → start fresh (step 2).
    - If the coordination file has an active sessions table → offer to resume the existing effort. Do not start a new effort unless the user confirms.
 
@@ -18,7 +18,7 @@ You must run on the latest Claude Opus model. If you detect you are running on a
    - Include a Delta session for any effort that touches production code.
    - Don't over-session — a single Beta session is fine for small efforts.
 
-4. **Write the coordination file.** Create or update `coordination.md` in memory with:
+4. **Write the coordination file.** Create or update `coordination.md` in your project memory directory with:
    - Current state summary
    - Active sessions table (Greek letter, role, status)
    - Session prompts (each session's detailed task description, under a `## Beta Prompt`, `## Gamma Prompt`, etc. heading)
