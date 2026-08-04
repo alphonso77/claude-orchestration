@@ -44,6 +44,26 @@ Re-run the same install command. It detects the existing installation and overwr
 curl -fsSL https://raw.githubusercontent.com/alphonso77/claude-orchestration/main/uninstall.sh | bash
 ```
 
+**How it decides what to delete.** The script looks at exactly ten paths — `~/.claude/skills/<name>/` and `~/.claude/commands/<name>.md`, for each of `alpha`, `beta`, `gamma`, `delta`, and `polish`. For each one it greps the markdown for the literal string `coordination`. On a match it removes the file or directory; otherwise it leaves it alone and lists it under "Left in place" so you can see what it skipped.
+
+That marker is used because all five skills reference the coordination file. The more specific phrase "orchestrated effort" would miss `polish.md`, which has never contained it.
+
+**The edge case.** You read it right: matching the marker is a heuristic for authorship, not proof of it. Two ways that can bite:
+
+- **A skill of your own at one of those five names.** `delta` and `polish` are generic, and "coordination" is an ordinary word — a personal `~/.claude/skills/delta/SKILL.md` that happens to mention coordinating anything looks identical to ours from the script's point of view, and gets deleted.
+- **Supporting files inside one of our skill directories.** The match is decided by reading `SKILL.md`, but the removal is `rm -rf` on the whole directory. If you added your own `references/` or scripts alongside one of our skills, they go too.
+
+Neither is recoverable, so preview first if either might apply to you:
+
+```bash
+for s in alpha beta gamma delta polish; do
+  f=~/.claude/skills/$s/SKILL.md
+  [ -f "$f" ] && grep -qF coordination "$f" && echo "would remove: ~/.claude/skills/$s/"
+done
+```
+
+For comparison, `install.sh` deletes nothing at all. When it finds files from an older layout it prints the `rm` command and lets you run it.
+
 ### Alternative: Plugin install
 
 If you prefer managed installs through Claude Code's plugin system:
@@ -72,6 +92,8 @@ foreach ($skill in @('alpha','beta','gamma','delta','polish')) { New-Item -ItemT
 ```bash
 rm -rf ~/.claude/skills/{alpha,beta,gamma,delta,polish}
 ```
+
+That command has no content check at all — unlike `uninstall.sh`, it removes those five directories whatever is in them. See [Uninstall](#uninstall) for the preview loop if you might have a skill of your own at one of those names.
 
 ### Use
 
