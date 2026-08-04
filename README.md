@@ -12,8 +12,8 @@ Run `/alpha` and describe what you're building. Alpha designs the work plan and 
 
 - **Plan** with `/alpha` — design the effort, define API contracts, assign sessions
 - **Build** with `/beta`, `/gamma`, etc. — each session reads its task from the coordination file
-- **Review & polish** — Alpha reviews each session's output, writes polish items, session runs `/polish`
-- **Verify** with `/delta` — dedicated test gate session
+- **Verify** with `/delta` — dedicated test gate: typecheck, lint, tests, build
+- **Review & polish** — Alpha design-reviews the *passing* code, writes polish items, session runs `/polish`
 
 Sessions coordinate through a single file:
 - **`coordination.md` in Claude memory** — the effort plan, session prompts, API contracts, progress tracking
@@ -58,13 +58,13 @@ This gives you namespaced commands (`/orch:alpha`, `/orch:beta`, etc.). To get s
 **macOS / Linux:**
 
 ```bash
-for skill in alpha beta gamma delta polish; do mkdir -p ~/.claude/skills/$skill && cp ~/.claude/plugins/orch/skills/$skill/SKILL.md ~/.claude/skills/$skill/SKILL.md; done
+for skill in alpha beta gamma delta polish; do mkdir -p ~/.claude/skills/$skill && cp ~/.claude/plugins/marketplaces/claude-orchestration/skills/$skill/SKILL.md ~/.claude/skills/$skill/SKILL.md; done
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-foreach ($skill in @('alpha','beta','gamma','delta','polish')) { New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills\$skill" | Out-Null; Copy-Item "$env:USERPROFILE\.claude\plugins\orch\skills\$skill\SKILL.md" "$env:USERPROFILE\.claude\skills\$skill\SKILL.md" }
+foreach ($skill in @('alpha','beta','gamma','delta','polish')) { New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills\$skill" | Out-Null; Copy-Item "$env:USERPROFILE\.claude\plugins\marketplaces\claude-orchestration\skills\$skill\SKILL.md" "$env:USERPROFILE\.claude\skills\$skill\SKILL.md" }
 ```
 
 **Note:** Uninstalling the plugin does not remove copied skills. To fully uninstall, also remove them:
@@ -80,9 +80,9 @@ rm -rf ~/.claude/skills/{alpha,beta,gamma,delta,polish}
 3. Describe what you're building
 4. Alpha designs the session plan and writes prompts into the coordination file
 5. Open new terminals, rename them (right-click > Rename), and run `/beta`, `/gamma`, etc.
-6. When sessions finish, come back to Alpha for code review
-7. Run `/polish` in each session to address review feedback
-8. Run `/delta` to verify everything
+6. When sessions finish, run `/delta` to verify — typecheck, lint, tests, build
+7. Come back to Alpha for design review of the passing code
+8. Run `/polish` in each session to address review feedback, then re-run `/delta` to confirm nothing broke
 9. Tell Alpha "let's wrap this up" — updates `CLAUDE.md` and resets the coordination file
 
 ## Skills
@@ -101,18 +101,24 @@ Skills are generic and static — never edit them. Alpha writes effort-specific 
 
 ```
 /alpha (plan)
-    ├── /beta (build) ──> Alpha reviews ──> /polish (fix)
-    ├── /gamma (build) ──> Alpha reviews ──> /polish (fix)
-    ├── /delta (verify)
+    ├── /beta (build) ──┐
+    ├── /gamma (build) ─┤
+    │                   ▼
+    │            /delta (verify) ──> Alpha design review
+    │                   ▲                    │
+    │                   └── /polish (fix) <──┘
+    │
     └── "let's wrap this up" ──> CLAUDE.md update ──> coordination reset
 ```
 
 1. **Alpha plans** -> writes coordination file with session prompts and API contracts
 2. **Sessions build** -> `/beta` and `/gamma` run in parallel terminals, each reading their prompt
-3. **Alpha reviews** -> design review, writes polish items into coordination file
-4. **Sessions polish** -> `/polish` in each session to address feedback
-5. **Delta verifies** -> typecheck, lint, tests, feature smoke test
+3. **Delta verifies** -> typecheck, lint, tests, build, feature smoke test. Failures go back to the owning session until clean
+4. **Alpha reviews** -> design review of the passing code, writes polish items into the coordination file
+5. **Sessions polish** -> `/polish` in each session, then a quick `/delta` re-run to confirm the polish didn't break anything
 6. **Wrap up** -> tell Alpha "let's wrap this up" — Alpha updates `CLAUDE.md` with what the effort changed, then resets the coordination file for the next effort
+
+**Why Delta first:** design review is worth more on code that already compiles and passes. Reviewing broken code spends Alpha's attention on noise that a typechecker catches for free.
 
 ## How It Works
 
@@ -120,12 +126,12 @@ Skills are generic and static — never edit them. Alpha writes effort-specific 
 
 The framework has two review gates with distinct responsibilities:
 
-| | Alpha (design review) | Delta (mechanical verification) |
+| | Delta (mechanical verification) | Alpha (design review) |
 |---|---|---|
-| **Checks** | Contract adherence, architectural fit, naming, structure, cross-session consistency | Typecheck, lint, tests, build |
-| **Output** | Polish items for sessions to fix | Pass/fail report |
+| **Checks** | Typecheck, lint, tests, build | Contract adherence, architectural fit, naming, structure, cross-session consistency |
+| **Output** | Pass/fail report | Polish items for sessions to fix |
 | **Edits code?** | No | No |
-| **When** | After each session completes | After all polish is done |
+| **When** | After coding sessions complete, and again after polish | After Delta passes |
 
 Alpha never runs tests. Delta never gives design opinions. Clean separation.
 
@@ -145,12 +151,16 @@ The coordination file is project-scoped — Claude's memory is keyed by project 
 
 ### Why Manual Sessions (Not Agents)
 
-Sessions are human-launched Claude Code instances in separate terminals, not spawned sub-agents. We tried the agent approach and moved away from it for two reasons:
+Sessions are human-launched Claude Code instances in separate terminals, not spawned sub-agents. This is a deliberate choice about **where the human sits in the loop**, not a workaround — Claude Code can spawn background agents with worktree isolation, and this framework still doesn't.
 
-- **Interruptions** — sub-agents running as Beta/Gamma would interrupt Alpha mid-conversation with permission prompts and status updates, breaking the user's focus
-- **Permission blockers** — agents frequently needed approvals that caused cascading context switches, stalling the effort instead of parallelizing it
+The reason is the gate. Every transition in the lifecycle — build to verify, verify to review, review to polish — is a point where you decide whether the work so far is good enough to build on. Launching the next session by hand is what makes that decision explicit:
 
-Manual sessions keep the human in the loop for each work stream. This turns out to be a feature: you stay close to the effort and maintain visibility into the build, even when vibe coding. Each session is a fully authenticated Claude Code instance that just works — no auth errors, no worktree confusion, no fallback to sequential execution.
+- **You read the coordination file at each hand-off.** Alpha's plan, Beta's reported decisions, Delta's failures — you see them because you have to open the terminal to move forward. Automatic hand-offs skip the reading.
+- **A bad plan gets caught at session one, not session four.** If Alpha's split is wrong or a contract is underspecified, you find out when you launch Beta and it starts down the wrong path — with the whole effort still cheap to redirect.
+- **Each session's context stays legible.** One terminal, one work stream, one transcript you can scroll. When something goes sideways you know which session did it and can steer that one without unwinding the rest.
+- **Parallelism you can actually watch.** Beta and Gamma run at the same time in separate windows. You keep visibility into both, even when vibe coding.
+
+The cost is real — you launch each session yourself, and the effort moves at the speed you attend to it. That's the trade being made. If you want fire-and-forget fan-out, use subagents directly; this framework is for efforts where you want to approve each step.
 
 ## Tips
 

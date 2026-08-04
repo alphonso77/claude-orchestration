@@ -54,6 +54,7 @@ else
 fi
 
 echo ""
-echo "Tip: Alpha/Beta/Gamma play a completion sound on macOS via afplay."
-echo "To skip the one-time permission prompt, add \"Bash(afplay:*)\" to the"
-echo "permissions.allow array in ~/.claude/settings.json."
+echo "Tip: Alpha/Beta/Gamma play a completion sound on macOS via afplay. The skills"
+echo "pre-approve it in frontmatter, but that grant only covers the turn that invoked"
+echo "the skill. For long sessions, add \"Bash(afplay:*)\" to the permissions.allow"
+echo "array in ~/.claude/settings.json to silence the prompt for good."

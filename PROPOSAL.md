@@ -1,7 +1,7 @@
 # Proposal: Distribution Channels for Claude Orchestration
 
 **Date:** 2026-03-24
-**Updated:** 2026-03-28
+**Updated:** 2026-08-04
 **Status:** Hybrid distribution (curl + plugin)
 
 ---
@@ -19,14 +19,13 @@ The coordination file lives in Claude's project-scoped memory, so per-project st
 3. **v3** — Claude Code plugin with standard manifest and skill auto-discovery
 4. **v4 (current)** — Hybrid: `curl | bash` as primary (short commands), plugin as alternative (managed installs)
 
-### Agent approach (abandoned)
+### Agent approach (not used)
 
-Early versions attempted to use spawned sub-agents for Beta/Gamma/Delta sessions. This failed in practice:
-- Sub-agents interrupted Alpha mid-conversation with permission prompts and status updates
-- Frequent permission blockers caused cascading context switches, stalling the effort
-- The human lost visibility into what each session was doing
+Early versions attempted spawned sub-agents for Beta/Gamma/Delta. The framework settled on manual human-launched sessions instead, and stays there by design — not because agents can't do the work, but because automating the hand-offs removes the thing that makes the framework useful.
 
-Manual human-steered sessions are the model. Each session is a separate Claude Code instance launched by the user in a new terminal. This keeps the human close to the effort.
+Every transition — build to verify, verify to review, review to polish — is a decision about whether the work so far is worth building on. Requiring the user to launch the next session makes that decision explicit: they read the coordination file to move forward, so a bad plan or an underspecified contract surfaces at session one rather than session four. Each session also keeps its own legible terminal and transcript, so a work stream that goes sideways can be steered without unwinding the others.
+
+The trade is throughput: the effort advances at the speed the user attends to it. That is accepted. This framework targets efforts where the user wants to approve each step, not fire-and-forget fan-out.
 
 ## Distribution Options
 
@@ -63,8 +62,8 @@ Manual human-steered sessions are the model. Each session is a separate Claude C
 ## Open Questions
 
 - Should we support more than 4 concurrent sessions (epsilon, zeta, etc.)? Current limit is practical, not technical.
-- How should session-to-session communication work if Claude Code ever supports it natively?
-- Could this integrate with Claude Code's multi-agent features if the interruption/permission problems are solved at the platform level?
+- Claude Code now supports direct session-to-session messaging and background subagents. Is there a hand-off where automating the transition would *not* cost the user the gate — for example Delta re-running itself after polish, where the outcome is pass/fail rather than a judgment call?
+- Should the skills declare `hooks` in frontmatter to enforce the file-ownership boundaries that are currently stated as rules in the skill body?
 
 ## Next Steps
 

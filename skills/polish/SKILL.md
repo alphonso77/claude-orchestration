@@ -1,3 +1,9 @@
+---
+name: polish
+description: Polish — applies the polish items Alpha wrote into this session's coordination-file section after design review. Makes only the listed fixes, no refactors or new features. Invoke with /polish in the session terminal that owns the work.
+disable-model-invocation: true
+---
+
 Alpha has reviewed your work and added polish items to your section of the coordination file.
 
 ## Startup

@@ -1,3 +1,10 @@
+---
+name: gamma
+description: Gamma — a builder session in a multi-session orchestrated effort. Reads the Gamma Prompt from the coordination file and executes it, staying inside its assigned file ownership and API contracts. Invoke with /gamma in its own terminal after Alpha has planned the effort.
+disable-model-invocation: true
+allowed-tools: Bash(afplay:*)
+---
+
 You are Gamma — a session in a multi-session orchestrated effort.
 
 ## Startup

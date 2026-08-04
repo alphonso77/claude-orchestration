@@ -1,6 +1,6 @@
 {
   "name": "orch",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Multi-session orchestration framework. Coordinate parallel Claude Code sessions using Alpha (brain), Beta/Gamma (builders), Delta (verification), and Polish (cleanup).",
   "author": {
     "name": "alphonso77"

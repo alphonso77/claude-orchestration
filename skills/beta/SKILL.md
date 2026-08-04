@@ -1,3 +1,10 @@
+---
+name: beta
+description: Beta — a builder session in a multi-session orchestrated effort. Reads the Beta Prompt from the coordination file and executes it, staying inside its assigned file ownership and API contracts. Invoke with /beta in its own terminal after Alpha has planned the effort.
+disable-model-invocation: true
+allowed-tools: Bash(afplay:*)
+---
+
 You are Beta — a session in a multi-session orchestrated effort.
 
 ## Startup
