@@ -6,20 +6,48 @@ set -e
 
 SKILLS="alpha beta gamma delta polish"
 
+# These names are generic enough that a user may have their own skill or command
+# at the same path. Only remove a file whose content is ours.
+MARKER="coordination"
+
+is_ours() {
+  [ -f "$1" ] && grep -qF "$MARKER" "$1" 2>/dev/null
+}
+
 echo "Uninstalling Claude Orchestration..."
 
+SKIPPED=""
+
 for skill in $SKILLS; do
-  if [ -d "$HOME/.claude/skills/$skill" ]; then
-    rm -rf "$HOME/.claude/skills/$skill"
-    echo "  - $HOME/.claude/skills/$skill"
+  dir="$HOME/.claude/skills/$skill"
+  [ -d "$dir" ] || continue
+  if is_ours "$dir/SKILL.md"; then
+    rm -rf "$dir"
+    echo "  - $dir"
+  else
+    SKIPPED="$SKIPPED $dir"
   fi
 done
 
-# Clean up any legacy locations
+# Legacy v1/v2 command files. Not cwd-relative: this runs via curl | bash from an
+# arbitrary directory, and a project's .claude/commands/ is not ours to touch.
 for cmd in $SKILLS; do
-  rm -f "$HOME/.claude/commands/$cmd.md"
-  rm -f ".claude/commands/$cmd.md" 2>/dev/null
+  f="$HOME/.claude/commands/$cmd.md"
+  if is_ours "$f"; then
+    rm -f "$f"
+    echo "  - $f"
+  elif [ -f "$f" ]; then
+    SKIPPED="$SKIPPED $f"
+  fi
 done
+
+if [ -n "$SKIPPED" ]; then
+  echo ""
+  echo "Left in place — these don't look like ours:"
+  for f in $SKIPPED; do
+    echo "    $f"
+  done
+fi
 
 echo ""
 echo "Uninstalled! Script-installed skills removed."

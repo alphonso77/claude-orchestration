@@ -24,25 +24,50 @@ for skill in $SKILLS; do
   echo "  + $TARGET/$skill/SKILL.md"
 done
 
-# Clean up deprecated locations
-if [ -d ".claude/commands" ]; then
+# Report deprecated v1/v2 locations — never delete them.
+#
+# This installer is run via curl | bash from an arbitrary working directory, so
+# a path like ".claude/commands" or "orchestration" can belong to something that
+# has nothing to do with this project. Leftovers are also harmless: a skill takes
+# precedence over a same-named file in .claude/commands/, so an old alpha.md is
+# inert once alpha/SKILL.md exists. We identify ours by content and print the
+# removal command for the user to run.
+# Every skill in every layout references the coordination file; "orchestrated
+# effort" would miss polish.md, which never carried that phrase.
+MARKER="coordination"
+LEGACY=""
+
+is_ours() {
+  [ -f "$1" ] && grep -qF "$MARKER" "$1" 2>/dev/null
+}
+
+for dir in ".claude/commands" "$HOME/.claude/commands"; do
+  [ -d "$dir" ] || continue
+  # Skip the second pass when cwd is $HOME and both paths resolve the same
+  if [ "$dir" = "$HOME/.claude/commands" ] && [ "$PWD" = "$HOME" ]; then
+    continue
+  fi
   for cmd in $SKILLS; do
-    rm -f ".claude/commands/$cmd.md"
+    if is_ours "$dir/$cmd.md"; then
+      LEGACY="$LEGACY $dir/$cmd.md"
+    fi
   done
-  rmdir ".claude/commands" 2>/dev/null || true
-  echo "  ~ removed deprecated .claude/commands/ files"
+done
+
+# v2 kept its docs here; require the known file so an unrelated dir is left alone
+if [ -f "orchestration/session-orchestration.md" ]; then
+  LEGACY="$LEGACY $PWD/orchestration/session-orchestration.md $PWD/orchestration/README.md"
 fi
 
-if [ -f "$HOME/.claude/commands/alpha.md" ]; then
-  for cmd in $SKILLS; do
-    rm -f "$HOME/.claude/commands/$cmd.md"
+if [ -n "$LEGACY" ]; then
+  echo ""
+  echo "Found files from an older layout. They are inert — the new skills take"
+  echo "precedence — but you can remove them:"
+  for f in $LEGACY; do
+    [ -e "$f" ] && echo "    $f"
   done
-  echo "  ~ removed deprecated ~/.claude/commands/ files"
-fi
-
-if [ -d "orchestration" ]; then
-  rm -rf orchestration
-  echo "  ~ removed deprecated orchestration/ directory"
+  echo ""
+  echo "  rm$LEGACY"
 fi
 
 echo ""
