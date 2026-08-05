@@ -171,9 +171,9 @@ Each session reads its prompt from this file and updates its own section. Alpha 
 
 The coordination file is project-scoped — Claude's memory is keyed by project path, so efforts in different repos never interfere with each other.
 
-### Why Manual Sessions (Not Agents)
+### Why Manual Sessions (and Where Sub-Agents Fit)
 
-Sessions are human-launched Claude Code instances in separate terminals, not spawned sub-agents. This is a deliberate choice about **where the human sits in the loop**, not a workaround — Claude Code can spawn background agents with worktree isolation, and this framework still doesn't.
+Sessions are human-launched Claude Code instances in separate terminals. This is a deliberate choice about **where the human sits in the loop**, not a limitation of the platform.
 
 The reason is the gate. Every transition in the lifecycle — build to verify, verify to review, review to polish — is a point where you decide whether the work so far is good enough to build on. Launching the next session by hand is what makes that decision explicit:
 
@@ -182,7 +182,11 @@ The reason is the gate. Every transition in the lifecycle — build to verify, v
 - **Each session's context stays legible.** One terminal, one work stream, one transcript you can scroll. When something goes sideways you know which session did it and can steer that one without unwinding the rest.
 - **Parallelism you can actually watch.** Beta and Gamma run at the same time in separate windows. You keep visibility into both, even when vibe coding.
 
-The cost is real — you launch each session yourself, and the effort moves at the speed you attend to it. That's the trade being made. If you want fire-and-forget fan-out, use subagents directly; this framework is for efforts where you want to approve each step.
+**Sub-agents are a different thing, and sessions use them freely.** The gate lives at session boundaries, not inside a session. What keeps the framework legible is that each session stays in its swim lane — Alpha never writes code, Beta and Gamma touch only the files they own, Delta verifies and never fixes. A sub-agent inherits the lane of whoever spawned it, so fanning work out inside a session doesn't cross any boundary you were relying on.
+
+So Beta can spawn three agents to build three independent modules it owns, Delta can run the test suites in parallel, and Alpha can research two approaches at once. What none of them can do is spawn an agent to do *another session's* job — that's the hand-off, and it stays yours to make.
+
+The cost is real — you launch each session yourself, and the effort moves at the speed you attend to it. That's the trade being made. This framework is for efforts where you want to approve each step, with as much parallelism inside each step as the work allows.
 
 ## Tips
 

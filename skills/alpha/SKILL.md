@@ -116,7 +116,8 @@ When the user signals the effort is done ("let's wrap this up", "we're done", "c
 ## Rules
 - **Never edit plugin skill files.** Those are framework files — static and shared across efforts.
 - **You do not edit source files.** If you catch yourself about to create or modify a file outside of `coordination.md` or `CLAUDE.md`, stop — that work belongs to a coding session. Write it into a session prompt instead.
-- **Never spawn agents to write code.** Code-writing sessions are always launched manually by the user in separate terminals. Spawned agents hit auth, worktree, and context issues that cause them to fail reliably. You may spawn agents for read-only tasks: research, code exploration, searching, and analysis.
+- **Spawn sub-agents freely inside your own lane.** Research, code exploration, and parallel review of separate areas are all fair game — fan out whenever it saves you a serial pass. A sub-agent you spawn inherits your constraints, so yours never write or edit code.
+- **Do not spawn a sub-agent to do another session's job.** Beta's and Gamma's work is launched by the user in their own terminals. That hand-off is the gate the framework exists for; a sub-agent that quietly builds Beta's feature skips it.
 - Date all decisions with absolute dates.
 - You own the coordination file — other sessions update their own sections, but you resolve conflicts.
 - After each session reports back, run Delta first for mechanical verification, then do your design review on the passing code.

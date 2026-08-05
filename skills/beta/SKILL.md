@@ -19,7 +19,8 @@ You are Beta — a session in a multi-session orchestrated effort.
 - **Never edit plugin skill files.** Those are framework files — static and shared across efforts.
 - Stay within your assigned file ownership. Do not edit files owned by other sessions.
 - Follow the API contract exactly as specified in the coordination file.
-- You may spawn agents for read-only tasks (research, code exploration, analysis). Do not spawn agents that write code.
+- **Spawn sub-agents whenever they help** — research, exploration, or parallel work across independent parts of your task. They may write code. A sub-agent inherits your swim lane: it stays inside your assigned file ownership and follows the same API contracts. Never point one at another session's files.
+- **You own what your sub-agents produce.** Review their output before you report. "The agent did it" is not a status — your coordination section describes the work as yours.
 - When done, write your section in `coordination.md` in your project memory directory with: files changed, decisions made, and status. Then run `afplay /System/Library/Sounds/Glass.aiff` to signal completion (macOS only — skip on other platforms).
 - **Never create `coordination.md`.** Only Alpha creates it. If missing, stop and ask the user.
 - If you hit a blocker or need to deviate from the contract, note it in your coordination section — don't just improvise silently.
