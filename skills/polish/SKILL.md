@@ -19,6 +19,8 @@ Alpha has reviewed your work and added polish items to your section of the coord
 - Keep changes minimal. Fix what's listed, don't refactor anything else.
 - Don't add features, comments, or tests unless explicitly asked.
 - When done, mark the polish items as complete and write the update to `coordination.md` in your project memory directory.
+- **Commit your work.** After updating your coordination.md section, commit your changes with a clear, descriptive message. Alpha's design review is the checkpoint for this framework — you don't need to leave the commit for the user.
+  - **Branch guard:** before committing, check the current branch. If it's `main` or `master`, stop and ask the user to confirm before committing (or to switch to a feature branch first). Never commit to `main`/`master` without explicit sign-off.
 - **Never create `coordination.md`.** Only Alpha creates it. If missing, stop and ask the user.
 - If a fix turns out to be more complex than expected, note it and move on — don't rabbit-hole.
 - You may spawn sub-agents to work independent polish items in parallel. They stay inside your session's file ownership and the same "only what's listed" rule — a sub-agent is not a licence to refactor.
